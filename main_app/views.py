@@ -21,10 +21,16 @@ def dogs_index(request):
 
 def dogs_detail(request, dog_id):
   dog = Dog.objects.get(id=dog_id)
+  # First, create a list of the toy ids that the dog DOES have
+  id_list = dog.toys.all().values_list('id')
+  # Query for the toys that the dog doesn't have
+  # by using the exclude() method vs. the filter() method
+  toys_dog_doesnt_have = Toy.objects.exclude(id__in=id_list)
+  # instantiate FeedingForm to be rendered in detail.html
   feeding_form = FeedingForm()
-
   return render(request, 'dogs/detail.html', {
-    'dog': dog, 'feeding_form': feeding_form
+    'dog': dog, 'feeding_form': feeding_form,
+    'toys': toys_dog_doesnt_have
   })
 
 def add_feeding(request, dog_id):
@@ -48,7 +54,7 @@ class DogCreate(CreateView):
 
 class DogUpdate(UpdateView):
   model = Dog
-  # Let's disallow the renaming of a cat by excluding the name field!
+  # Let's disallow the renaming of a dog by excluding the name field!
   fields = ['breed', 'description', 'age']
 
 class DogDelete(DeleteView):
@@ -72,3 +78,11 @@ class ToyUpdate(UpdateView):
 class ToyDelete(DeleteView):
   model = Toy
   success_url = '/toys'
+
+def assoc_toy(request, dog_id, toy_id):
+  Dog.objects.get(id=dog_id).toys.add(toy_id)
+  return redirect('detail', dog_id=dog_id)
+
+def unassoc_toy(request, dog_id, toy_id):
+  Dog.objects.get(id=dog_id).toys.remove(toy_id)
+  return redirect('detail', dog_id=dog_id)  
