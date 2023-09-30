@@ -50,8 +50,9 @@ def dogs_create(request, dog_id):
 
 class DogCreate(CreateView):
   model = Dog
-  fields = '__all__'
-
+  # Refactor fields so that 'toys' is not rendered in form
+  fields = ['name', 'breed', 'description', 'age']
+  
 class DogUpdate(UpdateView):
   model = Dog
   # Let's disallow the renaming of a dog by excluding the name field!
